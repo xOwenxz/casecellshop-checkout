@@ -4,7 +4,7 @@ import { products } from "../data/products";
 import { orders } from "../data/orders";
 
 describe("Checkout", () => {
-  it("deve enviar pedido para fila", () => {
+  it("enviar pedido para fila", () => {
     products[0].stock = 10;
     orders.length = 0;
 
@@ -30,7 +30,7 @@ describe("Checkout", () => {
     }
   });
 
-  it("deve retornar erro de estoque", () => {
+  it("retornar erro de estoque", () => {
     products[1].stock = 1;
 
     const result = processCheckout(
@@ -44,7 +44,7 @@ describe("Checkout", () => {
   
   });
 
-  it("deve validar quantidade inválida", () => {
+  it("validar quantidade inválida", () => {
     const result = processCheckout(
       "case-s23",
       0

@@ -3,7 +3,7 @@ import cors from "cors";
 import checkoutRoutes from "./routes/checkout";
 import { processQueue } from "./services/queueService";
 
-const app = express();
+export const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -17,8 +17,13 @@ processQueue();
 
 const PORT = 3001;
 
-app.listen(PORT, () => {
-  console.log(
-    `Servidor rodando na porta ${PORT}`
-  );
-});
+if (
+  process.env.NODE_ENV !==
+  "test"
+) {
+  app.listen(3001, () => {
+    console.log(
+      "Servidor rodando na porta 3001"
+    );
+  });
+}
