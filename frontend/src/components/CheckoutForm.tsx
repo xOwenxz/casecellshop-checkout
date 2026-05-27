@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { checkout } from "../api/checkout";
 
-import iphoneImg from "../assets/iphone15.jpg";
-import s23Img from "../assets/s23.jpg";
+import iphoneImg from "../assets/iphone15.png";
+import s23Img from "../assets/s23.png";
 
 const products = [
   {
@@ -27,35 +27,91 @@ export function CheckoutForm() {
   const [loading, setLoading] =
     useState(false);
 
-  const [message, setMessage] =
-    useState("");
+  const [steps, setSteps] = 
+    useState<string[]>([]);
 
   const [isError, setIsError] =
     useState(false);
 
   async function handleSubmit(
-    e: React.FormEvent
-  ) {
-    e.preventDefault();
+  e: React.FormEvent
+) {
+  e.preventDefault();
 
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const result = await checkout(
-        selectedProduct.id,
-        quantity
-      );
-
-      setIsError(false);
-      setMessage(`${result.message}. Pedido em processamento pelo ERP local. Estoque restante: ${result.remainingStock}`);
-    } catch (error: any) {
-      setIsError(true);
-      setMessage(error.message);
-    } finally {
-      setLoading(false);
-    }
+  if (!selectedProduct) {
+    setIsError(true);
+    setSteps([
+      "Selecione uma capinha válida."
+    ]);
+    return;
   }
+
+  setLoading(true);
+  setSteps([]);
+  setIsError(false);
+
+  const delay = (ms: number) =>
+    new Promise((resolve) =>
+      setTimeout(resolve, ms)
+    );
+
+  try {
+    setSteps([
+      "🔍 Validando pedido..."
+    ]);
+    await delay(1200);
+
+    setSteps((prev) => [
+      ...prev,
+      "📦 Verificando estoque..."
+    ]);
+    await delay(1400);
+
+    const result = await checkout(
+      selectedProduct.id,
+      quantity
+    );
+
+    setSteps((prev) => [
+      ...prev,
+      "✅ Estoque reservado"
+    ]);
+    await delay(1200);
+
+    setSteps((prev) => [
+      ...prev,
+      "🚚 Enviando pedido para fila local..."
+    ]);
+    await delay(1400);
+
+    setSteps((prev) => [
+      ...prev,
+      "🏭 ERP local processando pedido..."
+    ]);
+    await delay(1800);
+
+    setSteps((prev) => [
+      ...prev,
+      "🎉 Pedido concluído com sucesso!"
+    ]);
+
+    setSteps((prev) => [
+      ...prev,
+      `📊 Estoque restante: ${result.remainingStock}`
+    ]);
+    await delay(1200);
+  } catch (error: any) {
+    setIsError(true);
+
+    setSteps((prev) => [
+      ...prev,
+      "❌ Falha no processamento",
+      error.message
+    ]);
+  } finally {
+    setLoading(false);
+  }
+}
 
   return (
     <div className="card">
@@ -113,21 +169,23 @@ export function CheckoutForm() {
           disabled={loading}
         >
           {loading
-            ? "Processando..."
-            : "Comprar"}
+          ? "Atualizando pedido..."
+          : "Comprar"}
         </button>
 
-        {message && (
-          <p
-            className={
-              isError
-                ? "message error"
-                : "message success"
-            }
-          >
-            {message}
-          </p>
-        )}
+        {steps.length > 0 && (
+        <div
+          className={
+            isError
+              ? "message error"
+              : "message success"
+          }
+        >
+          {steps.map((step, index) => (
+            <p key={index}>{step}</p>
+          ))}
+        </div>
+      )}
       </form>
     </div>
   );
